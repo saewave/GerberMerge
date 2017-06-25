@@ -31,6 +31,6 @@ next command:
 > node GerberMerge.js --in "Hub USB 2.0" --dy 1.289765
 
 will process all files inside `/gerber_fiels/Hub USB 2.0`, clone each one one time and shift cloned layer to `1.289765` `inch` by `Y`.
-> node GerberMerge.js --in "Hub USB 2.0/Hub USB 2.0.TXT" --clone 2 --dy .72
+> node GerberMerge.js --in "Hub USB 2.0/Hub USB 2.0.GTL" --clone 2 --dy .72
 
-process only one file: `/gerber_fiels/Hub USB 2.0/Hub USB 2.0.TXT`, clone it twice and shift each layer to `0.72` `in` by `Y`
+process only one file: `/gerber_fiels/Hub USB 2.0/Hub USB 2.0.GTL`, clone it twice and shift each layer to `0.72` `in` by `Y`
