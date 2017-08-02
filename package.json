@@ -3,11 +3,13 @@
   "version": "1.0.0",
   "description": "GerberMerge",
   "main": "GerberMerge.js",
+  "repository": "https://github.com/saewave/GerberMerge.git",
   "dependencies": {
     "colors": "^1.1.2",
     "command-line-args": "^4.0.6",
     "command-line-usage": "^4.0.0",
-    "gerber-parser": "^1.0.6",
+    "gerber-parser": "git+https://github.com/saewave/gerber-parser.git",
+    "node-ini": "^1.0.0",
     "numeral": "^2.0.6"
   },
   "devDependencies": {},

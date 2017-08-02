@@ -1,1 +1,1 @@
-Place yourr gerber files here
+Place your gerber files here
