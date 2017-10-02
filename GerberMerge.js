@@ -5,6 +5,7 @@ const path = require('path');
 const colors = require('colors');
 const ini = require('node-ini');
 const Merger = require('./lib/merger').Merger;
+var archiver = require('archiver');
 
 const merger = new Merger();
 
@@ -27,7 +28,9 @@ const optionDefinitions = [
     { name: 'places', type: String },
     { name: 'init-coords', type: Boolean, defaultValue: false },
     { name: 'ini-section', type: String },
-    { name: 'merge', alias: 'm', type: Boolean, defaultValue: false}
+    { name: 'merge', alias: 'm', type: Boolean, defaultValue: false},
+    { name: 'show-info', alias: 'i', type: Boolean, defaultValue: false},
+    { name: 'archive', alias: 'a', type: String},
 ];
 
 let allowedExts = ['.gbl', '.gbo', '.gbs', '.gml', '.gtl', '.gts', '.gto', '.gtp', '.txt'];
@@ -65,6 +68,25 @@ if (options.places != undefined) {
             options.places = [parseInt(aPlaces[0]), parseInt(aPlaces[1])];
         }
     }
+}
+
+if (options.archive) {
+    var archive = archiver('zip', {
+        zlib: { level: 9 } // Sets the compression level.
+    });
+    var outputArchive = fs.createWriteStream(baseDir + options.archive);
+    archive.on('warning', function(err) {
+      if (err.code === 'ENOENT') {
+          console.log(err);
+      } else {
+          // throw error
+          throw err;
+      }
+    });
+    archive.on('error', function(err) {
+      throw err;
+    });
+    archive.pipe(outputArchive);
 }
 
 console.log("\nGerberMerge options:".yellow);
@@ -106,7 +128,11 @@ for (var _in in options.in) {
                 try {
                     const content = fs.readFileSync(baseDir + '/' + options.in[0] + '/' + files[f]);
                     const result = merger.mergeFiles([content.toString()], options);
-                    fs.writeFileSync(baseDir + '/' + options.in[0] + '/' + files[f] + options.postfix, result);
+                    if (options.archive) {
+                        archive.append(result, { name: files[f] });
+                    } else {
+                        fs.writeFileSync(baseDir + '/' + options.in[0] + '/' + files[f] + options.postfix, result);
+                    }
                 } catch (e) {
                     console.log('    ', e.toString().red);
                 }
@@ -117,10 +143,14 @@ for (var _in in options.in) {
         if (options.merge) {
             mergeFiles.push(content.toString());
         } else {
-           console.log(('Process single file: "' + __in + '"').yellow);
-           const result = merger.mergeFiles([content.toString()], options);
-           console.log('Write to: ' + baseDir + '/' + __in + options.postfix);
-           fs.writeFileSync(baseDir + '/' + __in + options.postfix, result);
+            console.log(('Process single file: "' + __in + '"').yellow);
+            const result = merger.mergeFiles([content.toString()], options);
+            console.log('Write to: ' + baseDir + '/' + __in + options.postfix);
+            if (options.archive) {
+                archive.append(result, { name: __in });
+            } else {
+               fs.writeFileSync(baseDir + '/' + __in + options.postfix, result);
+           }
         }
     }
 }
@@ -128,7 +158,11 @@ for (var _in in options.in) {
 if (options.merge) {
     if (mergeFiles.length) {
         const result = merger.mergeFiles(mergeFiles, options);
-        fs.writeFileSync(baseDir + '/' + __in + options.postfix, result);
+        if (options.archive) {
+            archive.append(result, { name: __in });
+        } else {
+            fs.writeFileSync(baseDir + '/' + __in + options.postfix, result);
+        }
         console.log('Write to: ' + baseDir + '/' + __in + options.postfix);
     }
     if (batchMergeFiles) {
@@ -138,8 +172,16 @@ if (options.merge) {
                 toMerge.push(fs.readFileSync(baseDir + '/' + batchMergeFiles[fidx][cidx]).toString());
             }
             const result = merger.mergeFiles(toMerge, options);
-            fs.writeFileSync(baseDir + '/' + options.prefix + fidx, result);
+            if (options.archive) {
+                archive.append(result, { name: options.prefix + fidx });
+            } else {
+                fs.writeFileSync(baseDir + '/' + options.prefix + fidx, result);
+            }
             console.log('Write to: ' + baseDir + '/' + options.prefix + fidx);
         }
     }
+}
+
+if (options.archive) {
+    archive.finalize();
 }

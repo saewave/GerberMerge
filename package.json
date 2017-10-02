@@ -5,6 +5,7 @@
   "main": "GerberMerge.js",
   "repository": "https://github.com/saewave/GerberMerge.git",
   "dependencies": {
+    "archiver": "^2.0.0",
     "colors": "^1.1.2",
     "command-line-args": "^4.0.6",
     "command-line-usage": "^4.0.0",
